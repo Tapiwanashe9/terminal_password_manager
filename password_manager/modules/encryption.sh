@@ -1,15 +1,16 @@
 #!/bin/bash
 
-# Load the encryption key from the config file
-source "$(dirname "$(realpath "$0")")/../config/config.env"
-
-# Function to encrypt a password
+# Encrypt a password
 encrypt_password() {
-    echo "$1" | openssl enc -aes-256-cbc -a -salt -pass pass:"$ENCRYPTION_KEY"
+    local password="$1"
+    local key=$(grep 'ENCRYPTION_KEY=' ../config/config.env | cut -d '=' -f2)
+    echo -n "$password" | openssl enc -aes-256-cbc -a -salt -pass pass:"$key"
 }
 
-# Function to decrypt a password
+# Decrypt a password
 decrypt_password() {
-    echo "$1" | openssl enc -aes-256-cbc -a -d -salt -pass pass:"$ENCRYPTION_KEY"
+    local encrypted_password="$1"
+    local key=$(grep 'ENCRYPTION_KEY=' ../config/config.env | cut -d '=' -f2)
+    echo "$encrypted_password" | openssl enc -aes-256-cbc -d -a -pass pass:"$key"
 }
 

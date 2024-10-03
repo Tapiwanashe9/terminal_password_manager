@@ -6,12 +6,33 @@ SCRIPT_DIR=$(dirname "$(realpath "$0")")
 # Include the encryption functions using an absolute path
 source "$SCRIPT_DIR/../modules/encryption.sh"
 
+# Function to verify the master password
+verify_master_password() {
+    echo "Enter the master password:"
+    read -s input_password
+
+    # Hash the input password and compare it to the stored hash
+    hashed_input=$(echo -n "$input_password" | openssl dgst -sha256 | awk '{print $2}')
+    
+    source "$SCRIPT_DIR/../config/config.env"
+    
+    if [ "$hashed_input" == "$MASTER_PASSWORD_HASH" ]; then
+        echo "Access granted."
+    else
+        echo "Access denied: Incorrect master password."
+        exit 1
+    fi
+}
+
+# Verify the master password before proceeding
+verify_master_password
+
 # Function to store a password
 store_password() {
     echo "Enter a label for this password (e.g., 'Gmail', 'Facebook'):"
     read label
     echo "Enter the password:"
-    read password
+    read -s password
 
     # Encrypt the password
     encrypted_password=$(encrypt_password "$password")
